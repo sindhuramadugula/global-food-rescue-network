@@ -1,0 +1,22 @@
+{
+  "name": "global-food-rescue-network",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @gfrn/web",
+    "dev:api": "npm run dev --workspace @gfrn/api",
+    "build": "npm run build --workspace @gfrn/web && npm run build --workspace @gfrn/api",
+    "lint": "npm run lint --workspace @gfrn/web && npm run lint --workspace @gfrn/api",
+    "db:generate": "npx prisma generate --schema=./prisma/schema.prisma",
+    "db:push": "npx prisma db push --schema=./prisma/schema.prisma",
+    "db:migrate": "npx prisma migrate dev --schema=./prisma/schema.prisma --name init",
+    "db:seed": "node ./prisma/seed.js"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}

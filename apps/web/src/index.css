@@ -1,0 +1,207 @@
+import { ArrowRight, CheckCircle2, Leaf, MapPinned, ShieldCheck, Users } from 'lucide-react';
+
+const stats = [
+  { label: 'Meals rescued', value: '1.2M+' },
+  { label: 'Active volunteers', value: '4.8K' },
+  { label: 'Verified NGOs', value: '370' },
+  { label: 'Cities covered', value: '34' },
+];
+
+const steps = [
+  'Donors post surplus meals and ingredients',
+  'Verified NGOs and volunteers review rescue requests',
+  'Safe pickups are coordinated and tracked in real time',
+];
+
+const features = [
+  { icon: Leaf, title: 'Smart matching', description: 'AI-assisted recommendations suggest the best NGO and volunteer matches while keeping human confirmation in the loop.' },
+  { icon: MapPinned, title: 'Live maps', description: 'Track nearby food availability, emergency pickups, NGO demand, and service coverage across geographies.' },
+  { icon: ShieldCheck, title: 'Safety-first', description: 'Food safety checks and expiry alerts help organizations act before food becomes unsafe to redistribute.' },
+  { icon: Users, title: 'Community action', description: 'Restaurants, colleges, supermarkets, event organizers, and volunteers can all participate in a unified rescue pipeline.' },
+];
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-white text-slate-900">
+      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 font-semibold tracking-wide">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-sm font-bold text-white">GF</div>
+            <span>Global Food Rescue Network</span>
+          </div>
+
+          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
+            <a href="#how-it-works">How it works</a>
+            <a href="#impact">Impact</a>
+            <a href="#join">Join</a>
+            <a href="#faq">FAQ</a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <button className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700">Login</button>
+            <button className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-emerald-700">Donate Food</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.15),_transparent_38%)]" />
+          <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-24">
+            <div className="flex flex-col justify-center">
+              <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+                <Leaf className="h-4 w-4" /> Save Food. Feed People. Protect the Planet.
+              </div>
+
+              <h1 className="max-w-xl text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                Help turn surplus meals into hope.
+              </h1>
+
+              <p className="mt-6 max-w-xl text-lg text-slate-600">
+                We connect restaurants, hotels, supermarkets, colleges, event organizers, NGOs, volunteers, and food banks to rescue safe surplus food before it is wasted.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-4">
+                <button className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-base font-semibold text-white shadow-soft hover:bg-emerald-700">
+                  Donate Food <ArrowRight className="h-4 w-4" />
+                </button>
+                <button className="rounded-full border border-slate-200 bg-white px-5 py-3 text-base font-semibold text-slate-800 hover:border-slate-300 hover:bg-slate-50">
+                  Find Food
+                </button>
+                <button className="rounded-full border border-slate-200 bg-white px-5 py-3 text-base font-semibold text-slate-800 hover:border-slate-300 hover:bg-slate-50">
+                  Become a Volunteer
+                </button>
+              </div>
+
+              <div className="mt-10 grid max-w-md grid-cols-2 gap-4 sm:grid-cols-4">
+                {stats.map((item) => (
+                  <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="text-2xl font-black text-slate-900">{item.value}</div>
+                    <div className="mt-1 text-xs text-slate-600">{item.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center">
+              <div className="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium text-emerald-700">Live rescue request</div>
+                      <div className="mt-2 text-3xl font-black text-slate-900">50 meals</div>
+                    </div>
+                    <div className="rounded-full bg-emerald-600 px-3 py-1 text-sm font-bold text-white">URGENT</div>
+                  </div>
+
+                  <div className="mt-6 space-y-4">
+                    <div className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm">
+                      <span className="text-slate-600">Pickup window</span>
+                      <span className="font-semibold text-slate-900">30 minutes</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm">
+                      <span className="text-slate-600">NGOs notified</span>
+                      <span className="font-semibold text-slate-900">12 nearby</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm">
+                      <span className="text-slate-600">Volunteers available</span>
+                      <span className="font-semibold text-slate-900">6 nearby</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="how-it-works" className="bg-slate-50 py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-600">How it works</p>
+              <h2 className="mt-4 text-3xl font-black text-slate-900 sm:text-4xl">A simple rescue journey</h2>
+            </div>
+
+            <div className="mt-12 grid gap-8 md:grid-cols-3">
+              {steps.map((step, index) => (
+                <div key={step} className="rounded-3xl border border-slate-200 bg-white p-8 shadow-soft">
+                  <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-lg font-black text-emerald-700">
+                    {index + 1}
+                  </div>
+                  <p className="text-lg font-semibold text-slate-900">{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="impact" className="py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-600">Live impact</p>
+              <h2 className="mt-4 text-3xl font-black text-slate-900 sm:text-4xl">Bigger impact, less waste</h2>
+            </div>
+
+            <div className="mt-12 grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+              {features.map(({ icon: Icon, title, description }) => (
+                <div key={title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+                  <div className="mb-5 inline-flex rounded-2xl bg-emerald-100 p-3 text-emerald-700">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+                  <p className="mt-3 text-slate-600">{description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="join" className="bg-slate-900 py-20 text-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-300">Join the network</p>
+                <h2 className="mt-4 text-3xl font-black sm:text-4xl">Organizations, volunteers, and donors all have a role.</h2>
+                <p className="mt-5 max-w-xl text-slate-300">
+                  From food producers to recovery partners, each stakeholder can create a rapid and accountable chain from surplus to safe distribution.
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {['Restaurants', 'Hotels', 'Supermarkets', 'NGOs', 'Volunteers', 'Schools & Colleges'].map((item) => (
+                  <div key={item} className="rounded-2xl border border-slate-700 bg-slate-800 p-4">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                      <span className="font-semibold">{item}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="faq" className="py-20">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-600">FAQ</p>
+              <h2 className="mt-4 text-3xl font-black text-slate-900 sm:text-4xl">Common questions</h2>
+            </div>
+
+            <div className="mt-12 space-y-4">
+              {[
+                'How does the platform decide what food can be rescued?',
+                'Do I need to be verified before donating?',
+                'Can volunteers accept emergency pickups?',
+                'How are maps and personal addresses protected?',
+              ].map((q) => (
+                <div key={q} className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-slate-700">
+                  {q}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

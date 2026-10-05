@@ -1,0 +1,35 @@
+export type UserRole =
+  | 'DONOR'
+  | 'NGO'
+  | 'VOLUNTEER'
+  | 'ADMIN'
+  | 'RESTAURANT'
+  | 'SUPERMARKET'
+  | 'HOSTEL_COLLEGE'
+  | 'EVENT_ORGANIZER';
+
+export type DonationStatus =
+  | 'AVAILABLE'
+  | 'ACCEPTED'
+  | 'VOLUNTEER_ASSIGNED'
+  | 'PICKUP_STARTED'
+  | 'PICKED_UP'
+  | 'IN_TRANSIT'
+  | 'DELIVERED'
+  | 'COMPLETED'
+  | 'EXPIRED'
+  | 'CANCELLED';
+
+export type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+
+export type FoodCategory =
+  | 'COOKED_MEALS'
+  | 'VEGETABLES'
+  | 'FRUITS'
+  | 'RICE'
+  | 'BREAD'
+  | 'DAIRY'
+  | 'PACKAGED_FOOD'
+  | 'BEVERAGES';
+
+export type DonationType = 'VEG' | 'NON_VEG' | 'MIXED';
