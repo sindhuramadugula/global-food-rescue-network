@@ -1,35 +1,678 @@
-export type UserRole =
-  | 'DONOR'
-  | 'NGO'
-  | 'VOLUNTEER'
-  | 'ADMIN'
-  | 'RESTAURANT'
-  | 'SUPERMARKET'
-  | 'HOSTEL_COLLEGE'
-  | 'EVENT_ORGANIZER';
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-export type DonationStatus =
-  | 'AVAILABLE'
-  | 'ACCEPTED'
-  | 'VOLUNTEER_ASSIGNED'
-  | 'PICKUP_STARTED'
-  | 'PICKED_UP'
-  | 'IN_TRANSIT'
-  | 'DELIVERED'
-  | 'COMPLETED'
-  | 'EXPIRED'
-  | 'CANCELLED';
+generator client {
+  provider = "prisma-client-js"
+}
 
-export type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
-export type FoodCategory =
-  | 'COOKED_MEALS'
-  | 'VEGETABLES'
-  | 'FRUITS'
-  | 'RICE'
-  | 'BREAD'
-  | 'DAIRY'
-  | 'PACKAGED_FOOD'
-  | 'BEVERAGES';
+model User {
+  id                    String    @id @default(cuid())
+  email                 String    @unique @db.VarChar(255)
+  name                  String    @db.VarChar(255)
+  passwordHash          String    @db.Text
+  role                  UserRole
+  phone                 String?   @db.VarChar(20)
+  profileImage          String?   @db.Text
+  bio                   String?   @db.Text
+  isEmailVerified       Boolean   @default(false)
+  emailVerificationCode String?   @db.VarChar(50)
+  isPhoneVerified       Boolean   @default(false)
+  isSuspended           Boolean   @default(false)
+  suspensionReason      String?   @db.Text
+  lastLoginAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-export type DonationType = 'VEG' | 'NON_VEG' | 'MIXED';
+  donorProfile          DonorProfile?
+  restaurantProfile     RestaurantProfile?
+  supermarketProfile    SupermarketProfile?
+  ngoProfile            NGOProfile?
+  volunteerProfile      VolunteerProfile?
+  receiverProfile       ReceiverProfile?
+  adminProfile          AdminProfile?
+
+  donations             FoodDonation[]
+  requests              FoodRequest[]
+  pickups               Pickup[]
+  deliveries            Delivery[]
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+  ratings               Rating[]
+  ratedBy               Rating[] @relation("RatedBy")
+  badges                UserBadge[]
+  certificates          Certificate[]
+  payments              Payment[]
+  reports               Report[]
+  reportedBy            Report[] @relation("ReportedBy")
+
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
+}
+
+model DonorProfile {
+  id                          String             @id @default(cuid())
+  userId                      String             @unique
+  user                        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalDonations              Int                @default(0)
+  totalMealsProvided          Int                @default(0)
+  successRate                 Float              @default(0)
+  verificationStatus          VerificationStatus @default(PENDING)
+  verificationRejectionReason String?            @db.Text
+  createdAt                   DateTime           @default(now())
+  updatedAt                   DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([verificationStatus])
+}
+
+model RestaurantProfile {
+  id                  String             @id @default(cuid())
+  userId              String             @unique
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurantName     String             @db.VarChar(255)
+  cuisineType         String             @db.VarChar(100)
+  avgDailyWaste      Int                @default(0)
+  totalDonations     Int                @default(0)
+  totalMealsProvided Int                @default(0)
+  verificationStatus VerificationStatus @default(PENDING)
+  certifications      String?            @db.Text
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([verificationStatus])
+}
+
+model SupermarketProfile {
+  id                  String             @id @default(cuid())
+  userId              String             @unique
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  supermarketName     String             @db.VarChar(255)
+  chainName           String?            @db.VarChar(255)
+  locations           Int                @default(1)
+  totalDonations      Int                @default(0)
+  totalMealsProvided  Int                @default(0)
+  verificationStatus  VerificationStatus @default(PENDING)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([verificationStatus])
+}
+
+model NGOProfile {
+  id                          String             @id @default(cuid())
+  userId                      String             @unique
+  user                        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationName            String             @db.VarChar(255)
+  registrationNumber          String             @unique @db.VarChar(100)
+  yearFounded                 Int?
+  missionStatement            String?            @db.Text
+  totalMealsReceived          Int                @default(0)
+  totalBeneficiaries          Int                @default(0)
+  verificationStatus          VerificationStatus @default(PENDING)
+  verificationDocuments       String?            @db.Text
+  verificationRejectionReason String?            @db.Text
+  serviceRadius               Int                @default(10)
+  maxCapacity                 Int                @default(100)
+  currentCapacity             Int                @default(0)
+  createdAt                   DateTime           @default(now())
+  updatedAt                   DateTime           @updatedAt
+
+  requests                   FoodRequest[]
+  donations                  FoodDonation[]
+
+  @@index([userId])
+  @@index([verificationStatus])
+  @@index([organizationName])
+}
+
+model VolunteerProfile {
+  id                     String             @id @default(cuid())
+  userId                 String             @unique
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isAvailable            Boolean            @default(true)
+  serviceRadius          Int                @default(15)
+  vehicleType            VehicleType?
+  vehicleName            String?            @db.VarChar(100)
+  vehicleRegistration    String?            @db.VarChar(50)
+  canCarryRefrigerated   Boolean            @default(false)
+  maxCapacityKg          Int                @default(50)
+  totalPickups           Int                @default(0)
+  totalDeliveries        Int                @default(0)
+  successRate            Float              @default(0)
+  totalPoints            Int                @default(0)
+  verificationStatus     VerificationStatus @default(PENDING)
+  backgroundCheckStatus  String?            @db.VarChar(50)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  pickups                Pickup[]
+  deliveries             Delivery[]
+
+  @@index([userId])
+  @@index([isAvailable])
+  @@index([verificationStatus])
+}
+
+model ReceiverProfile {
+  id                  String             @id @default(cuid())
+  userId              String             @unique
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  beneficiaryCount    Int                @default(1)
+  dietaryRestrictions String?            @db.Text
+  verificationStatus  VerificationStatus @default(PENDING)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([userId])
+}
+
+model AdminProfile {
+  id             String               @id @default(cuid())
+  userId         String               @unique
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissionLevel AdminPermissionLevel @default(MODERATOR)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@index([userId])
+}
+
+model FoodDonation {
+  id                  String           @id @default(cuid())
+  donationId          String           @unique @db.VarChar(50)
+  donorId             String
+  donor               User             @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  ngoId               String?
+  ngo                 NGOProfile?      @relation(fields: [ngoId], references: [id])
+  foodName            String           @db.VarChar(255)
+  category            FoodCategory
+  subCategory         String?          @db.VarChar(100)
+  quantity            Int              @default(1)
+  unitOfMeasure       String           @db.VarChar(20)
+  servingSize         Int?
+  numberOfPeople      Int?
+  foodType            DonationType
+  isVegetarian        Boolean          @default(false)
+  allergens           String?          @db.Text
+  preparationDateTime DateTime
+  useByDateTime       DateTime
+  storageCondition    StorageCondition
+  packagingType       String?          @db.VarChar(100)
+  pickupAddress       String           @db.Text
+  pickupLatitude      Float
+  pickupLongitude     Float
+  additionalNotes     String?          @db.Text
+  foodImages          String?          @db.Text
+  status              DonationStatus   @default(AVAILABLE)
+  isUrgent            Boolean          @default(false)
+  foodSafetyStatus    FoodSafetyStatus @default(NEEDS_REVIEW)
+  foodSafetyNotes     String?          @db.Text
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  expiredAt           DateTime?
+
+  matches             DonationMatch[]
+  pickups             Pickup[]
+  deliveries          Delivery[]
+  foodPassport        FoodPassport?
+  auditLogs           AuditLog[]
+
+  @@index([donorId])
+  @@index([ngoId])
+  @@index([status])
+  @@index([useByDateTime])
+  @@index([isUrgent])
+  @@index([createdAt])
+  @@index([category])
+}
+
+model FoodRequest {
+  id                    String        @id @default(cuid())
+  requestId             String        @unique @db.VarChar(50)
+  requestedByNgoId      String
+  requestedByNgo        NGOProfile    @relation(fields: [requestedByNgoId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requiredMeals         Int
+  preferredCategories   String        @db.Text
+  requestDateTime       DateTime
+  priorityLevel         RequestPriority
+  numberOfBeneficiaries Int
+  dietaryRestrictions   String?       @db.Text
+  deliveryAddress       String        @db.Text
+  deliveryLatitude      Float
+  deliveryLongitude     Float
+  status                RequestStatus @default(OPEN)
+  fulfillmentCount      Int           @default(0)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  matches               DonationMatch[]
+
+  @@index([requestedByNgoId])
+  @@index([userId])
+  @@index([status])
+  @@index([priorityLevel])
+  @@index([requestDateTime])
+}
+
+model DonationMatch {
+  id                       String        @id @default(cuid())
+  donationId               String
+  donation                 FoodDonation  @relation(fields: [donationId], references: [id], onDelete: Cascade)
+  requestId                String?
+  request                  FoodRequest?   @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  ngoId                    String?
+  ngo                      NGOProfile?    @relation(fields: [ngoId], references: [id])
+  matchScore               Float         @default(0)
+  distanceKm               Float?
+  expiryMinutesRemaining    Int?
+  matchReason              String        @db.Text
+  isAccepted               Boolean       @default(false)
+  acceptedAt               DateTime?
+  rejectionReason          String?       @db.Text
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+
+  @@index([donationId])
+  @@index([requestId])
+  @@index([ngoId])
+  @@index([matchScore])
+}
+
+model Pickup {
+  id                       String       @id @default(cuid())
+  pickupId                 String       @unique @db.VarChar(50)
+  donationId               String
+  donation                 FoodDonation @relation(fields: [donationId], references: [id], onDelete: Cascade)
+  volunteerId              String
+  volunteer                User         @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  status                   PickupStatus @default(ASSIGNED)
+  scheduledDateTime        DateTime
+  actualStartDateTime      DateTime?
+  actualCompletionDateTime DateTime?
+  pickupAddress            String       @db.Text
+  pickupLatitude           Float?
+  pickupLongitude          Float?
+  notes                    String?      @db.Text
+  photoBefore              String?      @db.Text
+  photoAfter               String?      @db.Text
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @updatedAt
+
+  deliveries               Delivery[]
+
+  @@index([donationId])
+  @@index([volunteerId])
+  @@index([status])
+  @@index([scheduledDateTime])
+}
+
+model Delivery {
+  id                       String        @id @default(cuid())
+  deliveryId               String        @unique @db.VarChar(50)
+  donationId               String
+  donation                 FoodDonation  @relation(fields: [donationId], references: [id], onDelete: Cascade)
+  pickupId                 String
+  pickup                   Pickup        @relation(fields: [pickupId], references: [id], onDelete: Cascade)
+  volunteerId              String
+  volunteer                User          @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  ngoId                    String
+  ngo                      NGOProfile    @relation(fields: [ngoId], references: [id], onDelete: Cascade)
+  status                   DeliveryStatus @default(INITIATED)
+  scheduledDateTime        DateTime
+  actualStartDateTime      DateTime?
+  actualCompletionDateTime DateTime?
+  deliveryAddress          String        @db.Text
+  deliveryLatitude         Float?
+  deliveryLongitude        Float?
+  quantityDelivered        Int
+  notes                    String?       @db.Text
+  photoDelivery            String?       @db.Text
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+
+  auditLogs                AuditLog[]
+
+  @@index([donationId])
+  @@index([pickupId])
+  @@index([volunteerId])
+  @@index([ngoId])
+  @@index([status])
+  @@index([scheduledDateTime])
+}
+
+model FoodPassport {
+  id                  String       @id @default(cuid())
+  qrCode              String       @unique @db.Text
+  donationId          String       @unique
+  donation            FoodDonation @relation(fields: [donationId], references: [id], onDelete: Cascade)
+  foodName            String       @db.VarChar(255)
+  quantity            Int
+  donorType           String       @db.VarChar(100)
+  preparationTime     DateTime
+  useByTime           DateTime
+  storageInfo         String       @db.Text
+  allergenInfo       String?      @db.Text
+  status              DonationStatus
+  pickupConfirmedAt   DateTime?
+  pickupConfirmedBy   String?      @db.VarChar(255)
+  deliveryConfirmedAt DateTime?
+  deliveryConfirmedBy String?      @db.VarChar(255)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@index([donationId])
+  @@index([qrCode])
+}
+
+model Notification {
+  id                String           @id @default(cuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              NotificationType
+  title             String           @db.VarChar(255)
+  message           String           @db.Text
+  relatedEntityId   String?          @db.VarChar(100)
+  relatedEntityType String?          @db.VarChar(50)
+  isRead            Boolean          @default(false)
+  readAt            DateTime?
+  emailSent         Boolean          @default(false)
+  emailSentAt       DateTime?
+  createdAt         DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model Rating {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ratedUserId String
+  ratedUser   User     @relation("RatedBy", fields: [ratedUserId], references: [id], onDelete: Cascade)
+  score       Int      @db.SmallInt
+  comment     String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, ratedUserId])
+  @@index([userId])
+  @@index([ratedUserId])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  badgeName   String   @unique @db.VarChar(100)
+  displayName String   @db.VarChar(255)
+  description String   @db.Text
+  iconUrl     String?  @db.Text
+  createdAt   DateTime @default(now())
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+model Certificate {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  certificateType   String    @db.VarChar(100)
+  milestone         String    @db.VarChar(255)
+  description       String    @db.Text
+  certificateUrl    String?   @db.Text
+  certificateNumber String    @unique @db.VarChar(100)
+  issuedAt          DateTime  @default(now())
+  expiresAt         DateTime?
+
+  @@index([userId])
+  @@index([certificateType])
+}
+
+model Payment {
+  id              String       @id @default(cuid())
+  paymentId       String       @unique @db.VarChar(100)
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount          Int
+  currency        String       @default("INR") @db.VarChar(3)
+  paymentType     PaymentType
+  paymentMethod   String       @db.VarChar(50)
+  status          PaymentStatus @default(PENDING)
+  sponsoredItem   String?      @db.VarChar(100)
+  sponsoredItemId String?      @db.VarChar(100)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([paymentType])
+}
+
+model Report {
+  id               String      @id @default(cuid())
+  reportedUserId   String
+  reportedUser     User        @relation(fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reportedByUserId String
+  reportedByUser   User        @relation("ReportedBy", fields: [reportedByUserId], references: [id], onDelete: Cascade)
+  reason           String      @db.Text
+  description      String?     @db.Text
+  status           ReportStatus @default(OPEN)
+  resolution       String?     @db.Text
+  resolvedAt       DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([reportedUserId])
+  @@index([reportedByUserId])
+  @@index([status])
+}
+
+model AuditLog {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action       String        @db.VarChar(100)
+  resourceType String        @db.VarChar(50)
+  resourceId   String        @db.VarChar(100)
+  oldValues    String?       @db.Text
+  newValues    String?       @db.Text
+  ipAddress    String?       @db.VarChar(50)
+  userAgent    String?       @db.Text
+  donationId   String?
+  donation     FoodDonation? @relation(fields: [donationId], references: [id], onDelete: SetNull)
+  deliveryId   String?
+  delivery     Delivery?     @relation(fields: [deliveryId], references: [id], onDelete: SetNull)
+  createdAt    DateTime      @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resourceType])
+  @@index([createdAt])
+}
+
+model Analytics {
+  id                  String   @id @default(cuid())
+  date                DateTime @unique
+  totalDonations      Int      @default(0)
+  totalMealsProvided  Int      @default(0)
+  totalDeliveries     Int      @default(0)
+  totalActiveVolunteers Int     @default(0)
+  totalActiveNGOs     Int      @default(0)
+  totalActiveDonors   Int      @default(0)
+  co2Avoided          Int      @default(0)
+  waterSaved          Int      @default(0)
+  wastePrevented      Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([date])
+}
+
+enum UserRole {
+  DONOR
+  RESTAURANT
+  SUPERMARKET
+  NGO
+  VOLUNTEER
+  RECEIVER
+  ADMIN
+  EMERGENCY_COORDINATOR
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum FoodCategory {
+  COOKED_MEALS
+  VEGETABLES
+  FRUITS
+  RICE_GRAINS
+  BREAD_BAKERY
+  DAIRY_EGGS
+  PACKAGED_FOOD
+  BEVERAGES
+  SWEETS_DESSERTS
+  MEAT_POULTRY
+  SEAFOOD
+  PREPARED_SALADS
+  SOUP
+  MISC
+}
+
+enum DonationType {
+  VEG
+  NON_VEG
+  MIXED
+}
+
+enum StorageCondition {
+  AMBIENT
+  REFRIGERATED
+  FROZEN
+  COOKED_WARM
+}
+
+enum DonationStatus {
+  AVAILABLE
+  ACCEPTED
+  VOLUNTEER_ASSIGNED
+  PICKUP_STARTED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum FoodSafetyStatus {
+  SAFE
+  NEEDS_REVIEW
+  DO_NOT_DISTRIBUTE
+}
+
+enum RequestStatus {
+  OPEN
+  MATCHED
+  FULFILLED
+  CANCELLED
+}
+
+enum RequestPriority {
+  NORMAL
+  HIGH
+  EMERGENCY
+}
+
+enum PickupStatus {
+  ASSIGNED
+  STARTED
+  COMPLETED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  INITIATED
+  IN_TRANSIT
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum NotificationType {
+  DONATION_CREATED
+  DONATION_ACCEPTED
+  PICKUP_ASSIGNED
+  PICKUP_STARTED
+  PICKUP_COMPLETED
+  DELIVERY_STARTED
+  DELIVERY_COMPLETED
+  EXPIRY_WARNING
+  EMERGENCY_ALERT
+  REQUEST_MATCHED
+  REQUEST_FULFILLED
+  RATING_RECEIVED
+  BADGE_EARNED
+  VERIFICATION_APPROVED
+  VERIFICATION_REJECTED
+  SYSTEM_ANNOUNCEMENT
+}
+
+enum VehicleType {
+  BIKE
+  SCOOTER
+  CAR
+  VAN
+  TRUCK
+  BICYCLE
+  MOTORBIKE
+}
+
+enum AdminPermissionLevel {
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum PaymentType {
+  MEAL_SPONSORSHIP
+  DELIVERY_SPONSORSHIP
+  PACKAGING_SPONSORSHIP
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum ReportStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+}
